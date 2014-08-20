@@ -1,38 +1,35 @@
 package de.mpii.trie.benchmark;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
 
-/**
- * Unit test for simple App.
- */
-public class BenchmarkTest 
-    extends TestCase
-{
-    /**
-     * Create the test case
-     *
-     * @param testName name of the test case
-     */
-    public BenchmarkTest( String testName )
-    {
-        super( testName );
+import org.junit.Before;
+import org.junit.Test;
+
+public class BenchmarkTest {
+
+    private Benchmark benchmark;
+    private Spotter spotter;
+    
+    @Before
+    public void initBenchmarkTest() throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+        this.benchmark = new Benchmark(getClass().getResourceAsStream("/entities.txt"), 
+                getClass().getResourceAsStream("/document.txt"));
+        File testJar = new File(getClass().getResource(
+                "/ternarytree-0.0.4-SNAPSHOT.jar").getPath());
+        ClassLoader loader = URLClassLoader.newInstance(new URL[] { testJar
+                .toURI().toURL() }, System.class.getClassLoader());
+        Class<?> clazz = Class.forName("de.mpii.ternarytree.Spotter", true, loader);
+        Object spot = clazz.newInstance();
+        this.spotter = (Spotter) spot;
     }
-
-    /**
-     * @return the suite of tests being tested
-     */
-    public static Test suite()
-    {
-        return new TestSuite( BenchmarkTest.class );
-    }
-
-    /**
-     * Rigourous Test :-)
-     */
-    public void testApp()
-    {
-        assertTrue( true );
+    
+    @Test
+    public void testBenchmark() {
+        benchmark.measureBuildTime(spotter);
+        benchmark.measureSpottingTime(spotter);
     }
 }
+
