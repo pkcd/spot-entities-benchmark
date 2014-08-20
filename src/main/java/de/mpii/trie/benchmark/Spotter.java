@@ -1,8 +1,10 @@
 package de.mpii.trie.benchmark;
 
-import java.io.InputStream;
+import java.util.Map;
 
 public interface Spotter {
 
-    Trie build(InputStream entityStream);
+    public void build(Map<String, Integer> tokens);
+    
+    public Map<Integer, Integer> findAllSpots(String[] tokens);
 }

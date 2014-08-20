@@ -1,13 +1,18 @@
 package de.mpii.trie.benchmark;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -16,18 +21,61 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 
 public class Benchmark {
-    private InputStream entityStream;
+    private Map<String, Integer> mentions; //from a source like aida_means.tsv
+    private String[] document; //from a source like CoNLL.tsv
     
-    public Benchmark(InputStream entityStream) {
-        this.entityStream = entityStream;
+    private void initMentions(InputStream entityStream) throws IOException {
+        mentions = new HashMap<String, Integer>();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(
+                entityStream));
+        String line = null;
+        int lineNumber = 0;
+        while ((line = reader.readLine()) != null) {
+            int startPos = line.indexOf('"');
+            int endPos = line.indexOf('"', startPos + 1);
+            String key = line.substring(startPos + 1, endPos);
+            mentions.put(key, lineNumber++);
+        }
+    }
+
+    private void initDocument(InputStream documentStream) throws IOException {
+        ArrayList<String> doc = new ArrayList<String>();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(
+                documentStream));
+        String line = null;
+        while ((line = reader.readLine()) != null) {
+            String[] tokens = line.split("\t");
+            doc.add(tokens[0]);
+        }
+        document = doc.toArray(new String[]{});
+    }
+    
+    public Benchmark(InputStream entityStream, InputStream documentStream)
+            throws IOException {
+        initMentions(entityStream);
+        initDocument(documentStream);
     }
 
     /**
-     * @param trie to be benchmarked
-     * @return build time in seconds.
+     * @param spotter to be benchmarked
      */
-    public Trie build(Spotter helper) {
-        return helper.build(entityStream);
+    public void measureBuildTime(Spotter spotter) {
+        long startTime = System.nanoTime();
+        spotter.build(mentions);
+        long endTime = System.nanoTime();
+        double buildTime = (endTime - startTime)/(1.0*1e9);
+        System.out.println("Build Time " + buildTime + " s");
+    }
+    
+    /**
+     * @param spotter to be benchmarked
+     */
+    public void measureSpottingTime(Spotter spotter) {
+        long startTime = System.nanoTime();
+        spotter.findAllSpots(document);
+        long endTime = System.nanoTime();
+        double spottingTime = (endTime - startTime)/(1.0*1e9);
+        System.out.println("Spotting Time " + spottingTime + " s");
     }
     
     public static void main(String[] args) {
@@ -46,23 +94,20 @@ public class Benchmark {
             String inputJarPath = cmd.getOptionValue("i");
             String trieClass = cmd.getOptionValue("c");
             String entityFilePath = cmd.getOptionValue("e");
-//            String documentFilePath = cmd.getOptionValue("d");
+            String documentFilePath = cmd.getOptionValue("d");
             
             InputStream entityStream = Files.newInputStream(Paths
                             .get(entityFilePath));
-            Benchmark benchmark = new Benchmark(entityStream);
+            InputStream documentStream = Files.newInputStream(Paths
+                    .get(documentFilePath));
+            Benchmark benchmark = new Benchmark(entityStream, documentStream);
             File testJar = new File(inputJarPath);
             ClassLoader loader = URLClassLoader.newInstance(new URL[] { testJar
                     .toURI().toURL() }, benchmark.getClass().getClassLoader());
             Class<?> clazz = Class.forName(trieClass, true, loader);
-            Spotter helper = (Spotter)clazz.newInstance();
-            
-            long startTime = System.nanoTime();
-            benchmark.build(helper);
-            long endTime = System.nanoTime();
-            double buildTime = (endTime - startTime)/(1.0*1e9);
-            System.out.println("Build Time " + buildTime + " s");
-            
+            Spotter spotter = (Spotter)clazz.newInstance();
+            benchmark.measureBuildTime(spotter);
+            benchmark.measureSpottingTime(spotter);
         } catch (ParseException e) {
             throw new RuntimeException(e);
         } catch (MalformedURLException e) {
