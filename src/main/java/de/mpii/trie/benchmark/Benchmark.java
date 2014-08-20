@@ -92,7 +92,7 @@ public class Benchmark {
         try {
             CommandLine cmd = parser.parse(options, args);
             String inputJarPath = cmd.getOptionValue("i");
-            String trieClass = cmd.getOptionValue("c");
+            String spotterClass = cmd.getOptionValue("c");
             String entityFilePath = cmd.getOptionValue("e");
             String documentFilePath = cmd.getOptionValue("d");
             
@@ -104,7 +104,7 @@ public class Benchmark {
             File testJar = new File(inputJarPath);
             ClassLoader loader = URLClassLoader.newInstance(new URL[] { testJar
                     .toURI().toURL() }, benchmark.getClass().getClassLoader());
-            Class<?> clazz = Class.forName(trieClass, true, loader);
+            Class<?> clazz = Class.forName(spotterClass, true, loader);
             Spotter spotter = (Spotter)clazz.newInstance();
             benchmark.measureBuildTime(spotter);
             benchmark.measureSpottingTime(spotter);
