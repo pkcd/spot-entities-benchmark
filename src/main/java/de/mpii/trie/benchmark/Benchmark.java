@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -59,20 +61,28 @@ public class Benchmark {
     /**
      * @param spotter to be benchmarked
      */
-    public void measureBuildTime(Spotter spotter) {
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public void measureBuildTime(Class spotterClass, Object spotter)
+            throws IllegalAccessException, NoSuchMethodException,
+            InvocationTargetException {
+        Method buildMethod = spotterClass.getMethod("build", Map.class);
         long startTime = System.nanoTime();
-        spotter.build(mentions);
+        buildMethod.invoke(spotter, mentions);
         long endTime = System.nanoTime();
-        double buildTime = (endTime - startTime)/(1.0*1e9);
+        double buildTime = (endTime - startTime) / (1.0 * 1e9);
         System.out.println("Build Time " + buildTime + " s");
     }
     
     /**
      * @param spotter to be benchmarked
      */
-    public void measureSpottingTime(Spotter spotter) {
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public void measureSpottingTime(Class spotterClass, Object spotter)
+            throws IllegalAccessException, NoSuchMethodException,
+            InvocationTargetException {
+        Method spotMethod = spotterClass.getMethod("findAllSpots", String[].class);
         long startTime = System.nanoTime();
-        spotter.findAllSpots(document);
+        spotMethod.invoke(spotter, new Object[]{document});
         long endTime = System.nanoTime();
         double spottingTime = (endTime - startTime)/(1.0*1e9);
         System.out.println("Spotting Time " + spottingTime + " s");
@@ -105,9 +115,9 @@ public class Benchmark {
             ClassLoader loader = URLClassLoader.newInstance(new URL[] { testJar
                     .toURI().toURL() }, benchmark.getClass().getClassLoader());
             Class<?> clazz = Class.forName(spotterClass, true, loader);
-            Spotter spotter = (Spotter)clazz.newInstance();
-            benchmark.measureBuildTime(spotter);
-            benchmark.measureSpottingTime(spotter);
+            Object spotter = clazz.newInstance();
+            benchmark.measureBuildTime(clazz, spotter);
+            benchmark.measureSpottingTime(clazz, spotter);
         } catch (ParseException e) {
             throw new RuntimeException(e);
         } catch (MalformedURLException e) {
@@ -124,6 +134,12 @@ public class Benchmark {
             throw new RuntimeException(e);
         } catch (IOException e) {
             throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+            System.out.println("Error in getting build method from spotter class.");
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            System.out.println("Error in getting findAllMatches method from spotter class.");
+            e.printStackTrace();
         }
     }
 }
