@@ -77,15 +77,17 @@ public class Benchmark {
      * @param spotter to be benchmarked
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public void measureSpottingTime(Class spotterClass, Object spotter)
+    public Map<Integer, Integer> measureSpottingTime(Class spotterClass, Object spotter)
             throws IllegalAccessException, NoSuchMethodException,
             InvocationTargetException {
         Method spotMethod = spotterClass.getMethod("findAllSpots", String[].class);
         long startTime = System.nanoTime();
-        spotMethod.invoke(spotter, new Object[]{document});
+        Map<Integer, Integer> result = (Map<Integer, Integer>) spotMethod
+                .invoke(spotter, new Object[] { document });
         long endTime = System.nanoTime();
         double spottingTime = (endTime - startTime)/(1.0*1e9);
         System.out.println("Spotting Time " + spottingTime + " s");
+        return result;
     }
     
     public static void main(String[] args) {

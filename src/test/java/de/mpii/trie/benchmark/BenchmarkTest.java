@@ -1,10 +1,13 @@
 package de.mpii.trie.benchmark;
 
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -31,7 +34,11 @@ public class BenchmarkTest {
             InvocationTargetException {
         Object spotter = spotterClass.newInstance();
         benchmark.measureBuildTime(spotterClass, spotter);
-        benchmark.measureSpottingTime(spotterClass, spotter);
+        Map<Integer, Integer> result = benchmark.measureSpottingTime(spotterClass, spotter);
+        assertEquals(3, result.size());
+        assertEquals(1, (int)result.get(0));
+        assertEquals(1, (int)result.get(8));
+        assertEquals(2, (int)result.get(14));
     }
 }
 
