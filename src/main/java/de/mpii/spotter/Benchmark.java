@@ -1,19 +1,13 @@
-package de.mpii.trie.benchmark;
+package de.mpii.spotter;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.cli.CommandLine;
@@ -23,21 +17,21 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 
 public class Benchmark {
-    private Map<String, Integer> mentions; //from a source like aida_means.tsv
+    private String[] mentions; //from a source like aida_means.tsv
     private String[] document; //from a source like CoNLL.tsv
     
     private void initMentions(InputStream entityStream) throws IOException {
-        mentions = new HashMap<String, Integer>();
+        ArrayList<String> mentions = new ArrayList<String>();
         BufferedReader reader = new BufferedReader(new InputStreamReader(
                 entityStream));
         String line = null;
-        int lineNumber = 0;
         while ((line = reader.readLine()) != null) {
             int startPos = line.indexOf('"');
             int endPos = line.indexOf('"', startPos + 1);
             String key = line.substring(startPos + 1, endPos);
-            mentions.put(key, lineNumber++);
+            mentions.add(key);
         }
+        this.mentions = mentions.toArray(new String[]{});
     }
 
     private void initDocument(InputStream documentStream) throws IOException {
@@ -61,41 +55,45 @@ public class Benchmark {
     /**
      * @param spotter to be benchmarked
      */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public void measureBuildTime(Class spotterClass, Object spotter)
-            throws IllegalAccessException, NoSuchMethodException,
-            InvocationTargetException {
-        Method buildMethod = spotterClass.getMethod("build", Map.class);
+    public Result measureBuildTime(Spotter spotter) {
         long startTime = System.nanoTime();
-        buildMethod.invoke(spotter, mentions);
+        spotter.build(mentions);
         long endTime = System.nanoTime();
-        double buildTime = (endTime - startTime) / (1.0 * 1e9);
-        System.out.println("Build Time " + buildTime + " s");
+        return new Result((endTime - startTime) / (1.0 * 1e9), null);
     }
     
     /**
      * @param spotter to be benchmarked
      */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public Map<Integer, Integer> measureSpottingTime(Class spotterClass, Object spotter)
-            throws IllegalAccessException, NoSuchMethodException,
-            InvocationTargetException {
-        Method spotMethod = spotterClass.getMethod("findAllSpots", String[].class);
+    public Result measureSpottingTime(Spotter spotter) {
         long startTime = System.nanoTime();
-        Map<Integer, Integer> result = (Map<Integer, Integer>) spotMethod
-                .invoke(spotter, new Object[] { document });
+        Map<Integer, Integer> result = spotter.findAllSpots(document);
         long endTime = System.nanoTime();
         double spottingTime = (endTime - startTime)/(1.0*1e9);
-        System.out.println("Spotting Time " + spottingTime + " s");
-        return result;
+        //System.out.println("Spotting Time " + spottingTime + " s");
+        return new Result(spottingTime, result);
     }
+    
+    public class Result {
+        private Object result;
+        private double time;
+        
+        public Result(double time, Object result) {
+            this.result = result;
+            this.time = time;
+        }
+        
+        public Object getResult() {
+            return result;
+        }
+        
+        public double getTime() {
+            return time;
+        }
+    };
     
     public static void main(String[] args) {
         Options options = new Options();
-        options.addOption("i", "input-jar", true,
-                "Jar file containing the trie implementation");
-        options.addOption("c", "class-name", true,
-                "Qualified class name of the trie to be benchmarked");
         options.addOption("e", "entity-file", true,
                 "File containing entities for building the trie");
         options.addOption("d", "document-file", true,
@@ -103,8 +101,6 @@ public class Benchmark {
         CommandLineParser parser = new PosixParser();
         try {
             CommandLine cmd = parser.parse(options, args);
-            String inputJarPath = cmd.getOptionValue("i");
-            String spotterClass = cmd.getOptionValue("c");
             String entityFilePath = cmd.getOptionValue("e");
             String documentFilePath = cmd.getOptionValue("d");
             
@@ -113,35 +109,20 @@ public class Benchmark {
             InputStream documentStream = Files.newInputStream(Paths
                     .get(documentFilePath));
             Benchmark benchmark = new Benchmark(entityStream, documentStream);
-            File testJar = new File(inputJarPath);
-            ClassLoader loader = URLClassLoader.newInstance(new URL[] { testJar
-                    .toURI().toURL() }, benchmark.getClass().getClassLoader());
-            Class<?> clazz = Class.forName(spotterClass, true, loader);
-            Object spotter = clazz.newInstance();
-            benchmark.measureBuildTime(clazz, spotter);
-            benchmark.measureSpottingTime(clazz, spotter);
+            Spotter[] subjectSpotters = new Spotter[]{new TrieSpotter(), /*new MPHSpotter()*/};
+            for (Spotter spotter : subjectSpotters) {
+                System.out.println("Benchmarking " + spotter.getClass());
+                Result r = benchmark.measureBuildTime(spotter);
+                System.out.println("Build Time " + r.getTime());
+                r = benchmark.measureSpottingTime(spotter);
+                System.out.println("Spotting Time " + r.getTime());
+            }
         } catch (ParseException e) {
             throw new RuntimeException(e);
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (SecurityException e) {
-            throw new RuntimeException(e);
-        } catch (InstantiationException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException(e);
         } catch (IOException e) {
             throw new RuntimeException(e);
-        } catch (NoSuchMethodException e) {
-            System.out.println("Error in getting build method from spotter class.");
-            throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-            System.out.println("Error in getting findAllMatches method from spotter class.");
-            e.printStackTrace();
         }
     }
 }
