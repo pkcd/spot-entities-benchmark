@@ -27,8 +27,7 @@ public class MPHSpotter implements Spotter {
 			if (id >= 0) {
 				System.out.println("match:" + spot + "(" + shingler.getStart()
 						+ "," + shingler.getEnd() + ")");
-				map.put(shingler.getStart(),
-						shingler.getEnd() - shingler.getStart());
+				map.put(shingler.getStart(), id);
 				shingler.shiftWindow();
 			} else {
 				shingler.next();
