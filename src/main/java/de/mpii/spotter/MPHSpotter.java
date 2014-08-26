@@ -1,6 +1,7 @@
 package de.mpii.spotter;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -13,12 +14,12 @@ public class MPHSpotter implements Spotter {
 		repo = new RamSpotRepository(mphDir);
 	}
 
-	public void build(String[] mentions) {
+	public void build(ArrayList<String> mentions) {
 		// TODO Auto-generated method stub
-
+		
 	}
 
-	public Map<Integer, Integer> findAllSpots(String[] document) {
+	public Map<Integer, Integer> findLongestMatches(String[] document) {
 		Map<Integer, Integer> map = new LinkedHashMap<Integer, Integer>();
 		Shingler shingler = new Shingler(document);
 		while (shingler.hasNext()) {
@@ -109,7 +110,7 @@ public class MPHSpotter implements Spotter {
 
 	public static void main(String[] args) {
 		MPHSpotter spotter = new MPHSpotter(new File("/tmp/aida"));
-		Map<Integer, Integer> map = spotter.findAllSpots(new String[] { "in",
+		Map<Integer, Integer> map = spotter.findLongestMatches(new String[] { "in",
 				"1984", "Diego", "Armando", "Maradona", "infamous", "Hand",
 				"of", "God", "goal", "against", "England", "in", "the",
 				"quarter-final", "of", "the", "1986" });

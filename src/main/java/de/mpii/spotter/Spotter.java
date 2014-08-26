@@ -1,5 +1,6 @@
 package de.mpii.spotter;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 /**
@@ -11,9 +12,9 @@ public interface Spotter {
     /**
      * 
      * @param tokens
-     *            An array mentions that must be recognized in a document.
+     *            An list of mentions that must be recognized in a document.
      */
-    public void build(String[] mentions);
+    public void build(ArrayList<String> mentions);
     
     /**
      * 
@@ -22,5 +23,5 @@ public interface Spotter {
      * @return A map describing the spotted entities. The key and value is
      *         offset and count of the match.
      */
-    public Map<Integer, Integer> findAllSpots(String[] document);
+    public Map<Integer, Integer> findLongestMatches(String[] document);
 }

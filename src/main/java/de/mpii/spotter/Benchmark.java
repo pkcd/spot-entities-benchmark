@@ -17,7 +17,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 
 public class Benchmark {
-    private String[] mentions; //from a source like aida_means.tsv
+    private ArrayList<String> mentions; //from a source like aida_means.tsv
     private String[] document; //from a source like CoNLL.tsv
     
     private void initMentions(InputStream entityStream) throws IOException {
@@ -31,7 +31,7 @@ public class Benchmark {
             String key = line.substring(startPos + 1, endPos);
             mentions.add(key);
         }
-        this.mentions = mentions.toArray(new String[]{});
+        this.mentions = mentions;
     }
 
     private void initDocument(InputStream documentStream) throws IOException {
@@ -67,7 +67,7 @@ public class Benchmark {
      */
     public Result measureSpottingTime(Spotter spotter) {
         long startTime = System.nanoTime();
-        Map<Integer, Integer> result = spotter.findAllSpots(document);
+        Map<Integer, Integer> result = spotter.findLongestMatches(document);
         long endTime = System.nanoTime();
         double spottingTime = (endTime - startTime)/(1.0*1e9);
         //System.out.println("Spotting Time " + spottingTime + " s");

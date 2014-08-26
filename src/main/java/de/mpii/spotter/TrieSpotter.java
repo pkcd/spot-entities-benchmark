@@ -1,5 +1,6 @@
 package de.mpii.spotter;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 import de.mpii.ternarytree.TernaryTriePrimitive;
@@ -20,7 +21,7 @@ public class TrieSpotter implements Spotter{
      * @return An object that can be used to spot the these tokens in a
      *         document.
      */
-    public void build(String[] mentions) {
+    public void build(ArrayList<String> mentions) {
         int id = 0;
         for (String mention : mentions) {
             trie.put(mention, ++id);
@@ -34,7 +35,7 @@ public class TrieSpotter implements Spotter{
      * @return A map describing the spotted entities. The key and value is
      *         offset and count of the match.
      */
-    public Map<Integer, Integer> findAllSpots(String[] tokens) {
+    public Map<Integer, Integer> findLongestMatches(String[] tokens) {
         return trie.getAllMatches(tokens);
     }
 
