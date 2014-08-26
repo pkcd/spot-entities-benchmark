@@ -27,7 +27,11 @@ public class BenchmarkTest {
         for (Spotter spotter : subjectSpotters) {
             Result r = benchmark.measureBuildTime(spotter);
             assertEquals(true, r.getTime() > 0);
-            r = benchmark.measureSpottingTime(spotter);
+            
+            List<Result> outputs = benchmark.measureSpottingTime(spotter);
+            assertEquals(2, outputs.size());
+            
+            r = outputs.get(0);
             assertEquals(true, r.getTime() > 0);
             List<Spot> result = (List<Spot>)r.getResult();
             assertEquals(3, result.size());
@@ -39,6 +43,19 @@ public class BenchmarkTest {
             assertEquals(1, result.get(0).getTokenCount());
             assertEquals(1, result.get(1).getTokenCount());
             assertEquals(2, result.get(2).getTokenCount());
+
+            r = outputs.get(1);
+            assertEquals(true, r.getTime() > 0);
+            result = (List<Spot>)r.getResult();
+            assertEquals(3, result.size());
+            
+            assertEquals(0, result.get(0).getTokenOffset());
+            assertEquals(3, result.get(1).getTokenOffset());
+            assertEquals(9, result.get(2).getTokenOffset());
+            
+            assertEquals(2, result.get(0).getTokenCount());
+            assertEquals(1, result.get(1).getTokenCount());
+            assertEquals(1, result.get(2).getTokenCount());
         }
     }
 }

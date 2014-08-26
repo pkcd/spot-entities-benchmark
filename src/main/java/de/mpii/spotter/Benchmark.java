@@ -17,8 +17,9 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 
 public class Benchmark {
+	private static final String DOCSTART = "--DOCSTART--";
     private ArrayList<String> mentions; //from a source like aida_means.tsv
-    private String[] document; //from a source like CoNLL.tsv
+    private ArrayList<String[]> documents; //from a source like CoNLL.tsv
     
     private void initMentions(InputStream entityStream) throws IOException {
         ArrayList<String> mentions = new ArrayList<String>();
@@ -35,15 +36,23 @@ public class Benchmark {
     }
 
     private void initDocument(InputStream documentStream) throws IOException {
-        ArrayList<String> doc = new ArrayList<String>();
+    	documents = new ArrayList<String[]>();
+        ArrayList<String> currentDocument = new ArrayList<String>();
         BufferedReader reader = new BufferedReader(new InputStreamReader(
                 documentStream));
         String line = null;
         while ((line = reader.readLine()) != null) {
-            String[] tokens = line.split("\t");
-            doc.add(tokens[0]);
+            if(line.equals(DOCSTART)) {
+            	documents.add(currentDocument.toArray(new String[]{}));
+            	currentDocument.clear();
+            } else {
+                String[] tokens = line.split("\t");
+            	currentDocument.add(tokens[0]);
+            }
         }
-        document = doc.toArray(new String[]{});
+        if (currentDocument.size() > 0) {
+        	documents.add(currentDocument.toArray(new String[]{}));
+        }
     }
     
     public Benchmark(InputStream entityStream, InputStream documentStream)
@@ -65,13 +74,17 @@ public class Benchmark {
     /**
      * @param spotter to be benchmarked
      */
-    public Result measureSpottingTime(Spotter spotter) {
-        long startTime = System.nanoTime();
-        List<Spot> result = spotter.findLongestMatches(document);
-        long endTime = System.nanoTime();
-        double spottingTime = (endTime - startTime)/(1.0*1e9);
-        //System.out.println("Spotting Time " + spottingTime + " s");
-        return new Result(spottingTime, result);
+    public List<Result> measureSpottingTime(Spotter spotter) {
+    	List<Result> results = new ArrayList<Result>();
+    	for (String[] document : documents) {
+            long startTime = System.nanoTime();
+            List<Spot> result = spotter.findLongestMatches(document);
+            long endTime = System.nanoTime();
+            double spottingTime = (endTime - startTime)/(1.0*1e9);
+            //System.out.println("Spotting Time " + spottingTime + " s");
+            results.add(new Result(spottingTime, result));
+    	}
+    	return results;
     }
     
     public class Result {
@@ -93,6 +106,7 @@ public class Benchmark {
     };
     
     public static void main(String[] args) {
+    	//java -jar Benchmark.jar -e <entity_file> -d <document_file>
         Options options = new Options();
         options.addOption("e", "entity-file", true,
                 "File containing entities for building the trie");
@@ -113,9 +127,15 @@ public class Benchmark {
             for (Spotter spotter : subjectSpotters) {
                 System.out.println("Benchmarking " + spotter.getClass());
                 Result r = benchmark.measureBuildTime(spotter);
-                System.out.println("Build Time " + r.getTime());
-                r = benchmark.measureSpottingTime(spotter);
-                System.out.println("Spotting Time " + r.getTime());
+                System.out.println("Build Time " + r.getTime() + " s");
+                List<Result> results = benchmark.measureSpottingTime(spotter);
+                double averageTime = 0;
+                for (Result singleResult : results) {
+                	averageTime += singleResult.getTime();
+                }
+                averageTime /= results.size();
+				System.out.println("Average Spotting Time for "
+						+ results.size() + " documents: " + averageTime + " s");
             }
         } catch (ParseException e) {
             throw new RuntimeException(e);

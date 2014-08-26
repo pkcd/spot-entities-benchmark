@@ -1,3 +1,5 @@
 "Saarbruken"	"http://en.com"
 "German Union"	"http://en.com"
 "Berlin"	"http://en.com"
+"Saarland University"	"http://en.com"
+"CHE"	"http://en.com"
