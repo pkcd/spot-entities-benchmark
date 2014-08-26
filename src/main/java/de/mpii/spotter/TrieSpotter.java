@@ -1,8 +1,9 @@
 package de.mpii.spotter;
 
 import java.util.ArrayList;
-import java.util.Map;
+import java.util.List;
 
+import de.mpii.ternarytree.Match;
 import de.mpii.ternarytree.TernaryTriePrimitive;
 
 public class TrieSpotter implements Spotter{
@@ -35,8 +36,17 @@ public class TrieSpotter implements Spotter{
      * @return A map describing the spotted entities. The key and value is
      *         offset and count of the match.
      */
-    public Map<Integer, Integer> findLongestMatches(String[] tokens) {
-        return trie.getAllMatches(tokens);
-    }
+    public List<Spot> findLongestMatches(String[] tokens) {
+    	List<Spot> machedSpots = new ArrayList<Spot>();
+        for (int i = 0; i < tokens.length; ++i) {
+          Match m = trie.getLongestMatch(tokens, i);
+          if (m.getTokenCount() > 0) {
+        	  machedSpots.add(new Spot(i, m.getTokenCount()));
+            // Jump after longest match.
+            i += m.getTokenCount();
+          }
+        }
+        return machedSpots;
+   }
 
 }

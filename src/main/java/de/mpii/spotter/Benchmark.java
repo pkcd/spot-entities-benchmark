@@ -8,7 +8,7 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Map;
+import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -67,7 +67,7 @@ public class Benchmark {
      */
     public Result measureSpottingTime(Spotter spotter) {
         long startTime = System.nanoTime();
-        Map<Integer, Integer> result = spotter.findLongestMatches(document);
+        List<Spot> result = spotter.findLongestMatches(document);
         long endTime = System.nanoTime();
         double spottingTime = (endTime - startTime)/(1.0*1e9);
         //System.out.println("Spotting Time " + spottingTime + " s");

@@ -3,7 +3,7 @@ package de.mpii.spotter;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
-import java.util.Map;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -29,11 +29,16 @@ public class BenchmarkTest {
             assertEquals(true, r.getTime() > 0);
             r = benchmark.measureSpottingTime(spotter);
             assertEquals(true, r.getTime() > 0);
-            Map<Integer, Integer> result = (Map<Integer, Integer>)r.getResult();
+            List<Spot> result = (List<Spot>)r.getResult();
             assertEquals(3, result.size());
-            assertEquals(1, (int)result.get(0));
-            assertEquals(1, (int)result.get(8));
-            assertEquals(2, (int)result.get(14));
+            
+            assertEquals(0, result.get(0).getTokenOffset());
+            assertEquals(8, result.get(1).getTokenOffset());
+            assertEquals(14, result.get(2).getTokenOffset());
+            
+            assertEquals(1, result.get(0).getTokenCount());
+            assertEquals(1, result.get(1).getTokenCount());
+            assertEquals(2, result.get(2).getTokenCount());
         }
     }
 }

@@ -1,7 +1,7 @@
 package de.mpii.spotter;
 
 import java.util.ArrayList;
-import java.util.Map;
+import java.util.List;
 
 /**
  * An interface describing methods that must be implemented by some
@@ -23,5 +23,6 @@ public interface Spotter {
      * @return A map describing the spotted entities. The key and value is
      *         offset and count of the match.
      */
-    public Map<Integer, Integer> findLongestMatches(String[] document);
+    public List<Spot> findLongestMatches(String[] document);
+    
 }
