@@ -2,9 +2,7 @@ package de.mpii.spotter;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import de.mpii.mph.RamSpotRepository;
 
@@ -17,7 +15,7 @@ public class MPHSpotter implements Spotter {
 
 	public void build(ArrayList<String> mentions) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	public List<Spot> findLongestMatches(String[] document) {
@@ -29,7 +27,9 @@ public class MPHSpotter implements Spotter {
 			if (id >= 0) {
 				System.out.println("match:" + spot + "(" + shingler.getStart()
 						+ "," + shingler.getEnd() + ")");
-				matchedSpots.add(new Spot(shingler.getStart(), id));
+				matchedSpots.add(new Spot(shingler.getStart(), shingler
+						.getCurrentTokenLength()));
+
 				shingler.shiftWindow();
 			} else {
 				shingler.next();
@@ -89,6 +89,10 @@ public class MPHSpotter implements Spotter {
 
 		public void setMaxShingleSize(int maxShingleSize) {
 			this.maxShingleSize = maxShingleSize;
+		}
+
+		public int getCurrentTokenLength() {
+			return end - start;
 		}
 
 		public int getStart() {
