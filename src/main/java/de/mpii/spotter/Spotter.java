@@ -1,6 +1,5 @@
 package de.mpii.spotter;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -14,7 +13,7 @@ public interface Spotter {
      * @param tokens
      *            An list of mentions that must be recognized in a document.
      */
-    public void build(ArrayList<String> mentions);
+    public void build(String[] mentions);
     
     /**
      * 

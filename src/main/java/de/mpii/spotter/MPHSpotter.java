@@ -13,7 +13,7 @@ public class MPHSpotter implements Spotter {
 		repo = new RamSpotRepository(mphDir);
 	}
 
-	public void build(ArrayList<String> mentions) {
+	public void build(String[] mentions) {
 		// TODO Auto-generated method stub
 
 	}

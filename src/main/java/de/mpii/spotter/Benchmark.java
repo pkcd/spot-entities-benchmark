@@ -18,7 +18,7 @@ import org.apache.commons.cli.PosixParser;
 
 public class Benchmark {
 	private static final String DOCSTART = "--DOCSTART--";
-    private ArrayList<String> mentions; //from a source like aida_means.tsv
+    private String[] mentions; //from a source like aida_means.tsv
     private ArrayList<String[]> documents; //from a source like CoNLL.tsv
     
     private void initMentions(InputStream entityStream) throws IOException {
@@ -32,7 +32,7 @@ public class Benchmark {
             String key = line.substring(startPos + 1, endPos);
             mentions.add(key);
         }
-        this.mentions = mentions;
+        this.mentions = mentions.toArray(new String[]{});
     }
 
     private void initDocument(InputStream documentStream) throws IOException {

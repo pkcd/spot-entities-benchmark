@@ -21,7 +21,7 @@ public class TrieSpotter implements Spotter{
      * @return An object that can be used to spot the these tokens in a
      *         document.
      */
-    public void build(ArrayList<String> mentions) {
+    public void build(String[] mentions) {
         int id = 0;
         for (String mention : mentions) {
             trie.put(mention, ++id);
