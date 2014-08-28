@@ -28,7 +28,7 @@ public class MPHSpotter implements Spotter {
 				System.out.println("match:" + spot + "(" + shingler.getStart()
 						+ "," + shingler.getEnd() + ")");
 				matchedSpots.add(new Spot(shingler.getStart(), shingler
-						.getCurrentTokenLength()));
+						.getCurrentTokenLength(), id));
 
 				shingler.shiftWindow();
 			} else {
