@@ -8,9 +8,15 @@ import de.mpii.mph.RamSpotRepository;
 
 public class MPHSpotter implements Spotter {
 	RamSpotRepository repo;
+	private final int maxShingleSize;
+
+	public MPHSpotter(File mphDir, int maxShingleSize) {
+		repo = new RamSpotRepository(mphDir);
+		this.maxShingleSize = maxShingleSize;
+	}
 
 	public MPHSpotter(File mphDir) {
-		repo = new RamSpotRepository(mphDir);
+		this(mphDir, 5);
 	}
 
 	public void build(String[] mentions) {
@@ -41,7 +47,6 @@ public class MPHSpotter implements Spotter {
 
 	private class Shingler {
 
-		private int maxShingleSize = 5;
 		int start = 0;
 		int end = maxShingleSize;
 		String[] tokens = null;
@@ -85,10 +90,6 @@ public class MPHSpotter implements Spotter {
 
 		public int getMaxShingleSize() {
 			return maxShingleSize;
-		}
-
-		public void setMaxShingleSize(int maxShingleSize) {
-			this.maxShingleSize = maxShingleSize;
 		}
 
 		public int getCurrentTokenLength() {
