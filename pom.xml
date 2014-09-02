@@ -30,5 +30,11 @@
 		<artifactId>ternarytree</artifactId>
 		<version>0.0.4-SNAPSHOT</version>
 	</dependency>
+	
+	<dependency>
+		<groupId>de.mpii</groupId>
+		<artifactId>mph</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</dependency>
   </dependencies>
 </project>

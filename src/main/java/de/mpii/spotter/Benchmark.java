@@ -1,6 +1,7 @@
 package de.mpii.spotter;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -18,23 +19,9 @@ import org.apache.commons.cli.PosixParser;
 
 public class Benchmark {
 	private static final String DOCSTART = "--DOCSTART--";
-    private String[] mentions; //from a source like aida_means.tsv
+    private String entityFilePath; //from a source like aida_means.tsv
     private ArrayList<String[]> documents; //from a source like CoNLL.tsv
     
-    private void initMentions(InputStream entityStream) throws IOException {
-        ArrayList<String> mentions = new ArrayList<String>();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(
-                entityStream));
-        String line = null;
-        while ((line = reader.readLine()) != null) {
-            int startPos = line.indexOf('"');
-            int endPos = line.indexOf('"', startPos + 1);
-            String key = line.substring(startPos + 1, endPos);
-            mentions.add(key);
-        }
-        this.mentions = mentions.toArray(new String[]{});
-    }
-
     private void initDocument(InputStream documentStream) throws IOException {
     	documents = new ArrayList<String[]>();
         ArrayList<String> currentDocument = new ArrayList<String>();
@@ -55,18 +42,19 @@ public class Benchmark {
         }
     }
     
-    public Benchmark(InputStream entityStream, InputStream documentStream)
+    public Benchmark(String entityFilePath, InputStream documentStream)
             throws IOException {
-        initMentions(entityStream);
+        this.entityFilePath = entityFilePath;
         initDocument(documentStream);
     }
 
     /**
      * @param spotter to be benchmarked
+     * @throws IOException 
      */
-    public Result measureBuildTime(Spotter spotter) {
+    public Result measureBuildTime(Spotter spotter) throws IOException {
         long startTime = System.nanoTime();
-        spotter.build(mentions);
+        spotter.build(entityFilePath);
         long endTime = System.nanoTime();
         return new Result((endTime - startTime) / (1.0 * 1e9), null);
     }
@@ -105,7 +93,26 @@ public class Benchmark {
         }
     };
     
-    public static void main(String[] args) {
+    
+	private static File createTempDirectory(String prefix) throws IOException {
+		final File temp;
+
+		temp = File.createTempFile(prefix, Long.toString(System.nanoTime()));
+
+		if (!(temp.delete())) {
+			throw new IOException("Could not delete temp file: "
+					+ temp.getAbsolutePath());
+		}
+
+		if (!(temp.mkdir())) {
+			throw new IOException("Could not create temp directory: "
+					+ temp.getAbsolutePath());
+		}
+
+		return (temp);
+	}
+
+	public static void main(String[] args) {
     	//java -jar Benchmark.jar -e <entity_file> -d <document_file>
         Options options = new Options();
         options.addOption("e", "entity-file", true,
@@ -118,12 +125,12 @@ public class Benchmark {
             String entityFilePath = cmd.getOptionValue("e");
             String documentFilePath = cmd.getOptionValue("d");
             
-            InputStream entityStream = Files.newInputStream(Paths
-                            .get(entityFilePath));
             InputStream documentStream = Files.newInputStream(Paths
                     .get(documentFilePath));
-            Benchmark benchmark = new Benchmark(entityStream, documentStream);
-            Spotter[] subjectSpotters = new Spotter[]{new TrieSpotter(), /*new MPHSpotter()*/};
+            Benchmark benchmark = new Benchmark(entityFilePath, documentStream);
+        	File dir = createTempDirectory("mphDir");
+        	dir.deleteOnExit();
+            Spotter[] subjectSpotters = new Spotter[]{new TrieSpotter(), new MPHSpotter(dir)};
             for (Spotter spotter : subjectSpotters) {
                 System.out.println("Benchmarking " + spotter.getClass());
                 Result r = benchmark.measureBuildTime(spotter);

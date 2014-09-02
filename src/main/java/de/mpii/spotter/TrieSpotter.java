@@ -1,5 +1,11 @@
 package de.mpii.spotter;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,11 +26,19 @@ public class TrieSpotter implements Spotter{
      *            document.
      * @return An object that can be used to spot the these tokens in a
      *         document.
+     * @throws IOException 
      */
-    public void build(String[] mentions) {
+    public void build(String entityFilePath) throws IOException {
+    	InputStream entityStream = Files.newInputStream(Paths.get(entityFilePath));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(
+                entityStream));
+        String line = null;
         int id = 0;
-        for (String mention : mentions) {
-            trie.put(mention, ++id);
+        while ((line = reader.readLine()) != null) {
+            int startPos = line.indexOf('"');
+            int endPos = line.indexOf('"', startPos + 1);
+            String key = line.substring(startPos + 1, endPos);
+            trie.put(key, ++id);
         }
     }
 

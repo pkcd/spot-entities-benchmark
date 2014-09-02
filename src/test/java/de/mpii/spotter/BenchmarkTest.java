@@ -2,6 +2,7 @@ package de.mpii.spotter;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -16,14 +17,16 @@ public class BenchmarkTest {
     
     @Before
     public void initBenchmarkTest() throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-        this.benchmark = new Benchmark(getClass().getResourceAsStream("/entities.txt"), 
+        this.benchmark = new Benchmark(getClass().getResource("/entities.txt").getPath(), 
                 getClass().getResourceAsStream("/document.txt"));
     }
     
     @SuppressWarnings("unchecked")
     @Test
-    public void testBenchmark() {
-        Spotter[] subjectSpotters = new Spotter[]{new TrieSpotter(), /*new MPHSpotter()*/};
+    public void testBenchmark() throws IOException {
+    	File mphDir = createTempDirectory("mphDir");
+    	mphDir.deleteOnExit();
+        Spotter[] subjectSpotters = new Spotter[]{new TrieSpotter(), new MPHSpotter(mphDir)};
         for (Spotter spotter : subjectSpotters) {
             Result r = benchmark.measureBuildTime(spotter);
             assertEquals(true, r.getTime() > 0);
@@ -58,5 +61,23 @@ public class BenchmarkTest {
             assertEquals(1, result.get(2).getTokenCount());
         }
     }
+    
+	private File createTempDirectory(String prefix) throws IOException {
+		final File temp;
+
+		temp = File.createTempFile(prefix, Long.toString(System.nanoTime()));
+
+		if (!(temp.delete())) {
+			throw new IOException("Could not delete temp file: "
+					+ temp.getAbsolutePath());
+		}
+
+		if (!(temp.mkdir())) {
+			throw new IOException("Could not create temp directory: "
+					+ temp.getAbsolutePath());
+		}
+
+		return (temp);
+	}
 }
 

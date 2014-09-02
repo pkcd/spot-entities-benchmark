@@ -1,5 +1,6 @@
 package de.mpii.spotter;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -13,7 +14,7 @@ public interface Spotter {
      * @param tokens
      *            An list of mentions that must be recognized in a document.
      */
-    public void build(String[] mentions);
+    public void build(String entityFilePath) throws IOException;
     
     /**
      * 

@@ -1,17 +1,22 @@
 package de.mpii.spotter;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.mpii.mph.RamSpotFile;
 import de.mpii.mph.RamSpotRepository;
+import de.mpii.mph.SpotEliasFanoOffsets;
+import de.mpii.mph.SpotMinimalPerfectHash;
 
 public class MPHSpotter implements Spotter {
 	RamSpotRepository repo;
 	private final int maxShingleSize;
+	private File mphDir;
 
 	public MPHSpotter(File mphDir, int maxShingleSize) {
-		repo = new RamSpotRepository(mphDir);
+		this.mphDir = mphDir;
 		this.maxShingleSize = maxShingleSize;
 	}
 
@@ -19,9 +24,43 @@ public class MPHSpotter implements Spotter {
 		this(mphDir, 5);
 	}
 
-	public void build(String[] mentions) {
-		// TODO Auto-generated method stub
+	public void build(String entityFilePath) throws IOException {
+		//generate mph values
+		File inputPath = new File(entityFilePath);
+		File mphPath = new File(mphDir, SpotMinimalPerfectHash.STDNAME);
+		File spotMphFile = new File(mphDir,
+				SpotMinimalPerfectHash.STDSPOTNAME);
 
+		System.out.println("mphPath = " + mphPath);
+		System.out.println("outputPath = " + spotMphFile);
+
+		SpotMinimalPerfectHash mph = new SpotMinimalPerfectHash()
+				.generateHash(inputPath);
+		mph.dumpSpotsAndHash(inputPath, spotMphFile);
+		mph.dump(mphPath);
+
+		//sort by mph values
+		File sortedSpotMphFile = new File(mphDir, "sorted_spot_mph.tsv");
+		ExternalSort.sort(spotMphFile.getPath(), sortedSpotMphFile.getPath(), '\t', 2, true, false);
+		sortedSpotMphFile.renameTo(spotMphFile);
+		
+		//generate mph index
+		File outputPath = new File(mphDir, RamSpotFile.STDNAME);
+		File efPath = new File(mphDir, SpotEliasFanoOffsets.STDNAME);
+		File tmp = null;
+		try {
+			tmp = File.createTempFile("eliasfano-offset", ".txt");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		tmp.deleteOnExit();
+		// inputPath.deleteOnExit();
+		RamSpotFile spotFile = new RamSpotFile();
+		spotFile.dumpSpotFile(spotMphFile, outputPath, tmp);
+		SpotEliasFanoOffsets offsets = new SpotEliasFanoOffsets()
+				.generateEliasFanoFile(tmp.getAbsolutePath());
+		offsets.dump(efPath);
 	}
 
 	public List<Spot> findLongestMatches(String[] document) {
