@@ -14,7 +14,7 @@ public interface Spotter {
      * @param tokens
      *            An list of mentions that must be recognized in a document.
      */
-    public void build(String entityFilePath) throws IOException;
+    public void build(Iterable<String> entities) throws IOException;
     
     /**
      * 

@@ -19,33 +19,13 @@ import org.apache.commons.cli.PosixParser;
 
 public class Benchmark {
 	private static final String DOCSTART = "--DOCSTART--";
-    private String entityFilePath; //from a source like aida_means.tsv
-    private ArrayList<String[]> documents; //from a source like CoNLL.tsv
+    private InputStream entityStream; //from a source like aida_means.tsv
+    private InputStream documentStream; //from a source like CoNLL.tsv
     
-    private void initDocument(InputStream documentStream) throws IOException {
-    	documents = new ArrayList<String[]>();
-        ArrayList<String> currentDocument = new ArrayList<String>();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(
-                documentStream));
-        String line = null;
-        while ((line = reader.readLine()) != null) {
-            if(line.equals(DOCSTART)) {
-            	documents.add(currentDocument.toArray(new String[]{}));
-            	currentDocument.clear();
-            } else {
-                String[] tokens = line.split("\t");
-            	currentDocument.add(tokens[0]);
-            }
-        }
-        if (currentDocument.size() > 0) {
-        	documents.add(currentDocument.toArray(new String[]{}));
-        }
-    }
-    
-    public Benchmark(String entityFilePath, InputStream documentStream)
+    public Benchmark(InputStream entityStream, InputStream documentStream)
             throws IOException {
-        this.entityFilePath = entityFilePath;
-        initDocument(documentStream);
+        this.entityStream = entityStream;
+        this.documentStream = documentStream;
     }
 
     /**
@@ -54,7 +34,7 @@ public class Benchmark {
      */
     public Result measureBuildTime(Spotter spotter) throws IOException {
         long startTime = System.nanoTime();
-        spotter.build(entityFilePath);
+        spotter.build(new SpotIterable(entityStream));
         long endTime = System.nanoTime();
         return new Result((endTime - startTime) / (1.0 * 1e9), null);
     }
@@ -62,11 +42,23 @@ public class Benchmark {
     /**
      * @param spotter to be benchmarked
      */
-    public List<Result> measureSpottingTime(Spotter spotter) {
+    public List<Result> measureSpottingTime(Spotter spotter) throws IOException {
     	List<Result> results = new ArrayList<Result>();
-    	for (String[] document : documents) {
+        ArrayList<String> document = new ArrayList<String>();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(
+                documentStream));
+    	while (true) {
+            String line = null;
+            document.clear();
+            while ((line = reader.readLine()) != null && !line.equals(DOCSTART)) {
+                	document.add(line.split("\t")[0]);
+            }
+            if (document.size() <= 0) {
+            	break;
+            }
+
             long startTime = System.nanoTime();
-            List<Spot> result = spotter.findLongestMatches(document);
+            List<Spot> result = spotter.findLongestMatches(document.toArray(new String[]{}));
             long endTime = System.nanoTime();
             double spottingTime = (endTime - startTime)/(1.0*1e9);
             //System.out.println("Spotting Time " + spottingTime + " s");
@@ -125,9 +117,10 @@ public class Benchmark {
             String entityFilePath = cmd.getOptionValue("e");
             String documentFilePath = cmd.getOptionValue("d");
             
-            InputStream documentStream = Files.newInputStream(Paths
-                    .get(documentFilePath));
-            Benchmark benchmark = new Benchmark(entityFilePath, documentStream);
+        	InputStream entityStream = Files.newInputStream(Paths.get(entityFilePath));
+            InputStream documentStream = Files.newInputStream(Paths.get(documentFilePath));
+            
+            Benchmark benchmark = new Benchmark(entityStream, documentStream);
         	File dir = createTempDirectory("mphDir");
         	dir.deleteOnExit();
             Spotter[] subjectSpotters = new Spotter[]{new TrieSpotter(), new MPHSpotter(dir)};

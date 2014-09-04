@@ -1,8 +1,13 @@
 package de.mpii.spotter;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import de.mpii.mph.RamSpotFile;
@@ -24,9 +29,8 @@ public class MPHSpotter implements Spotter {
 		this(mphDir, 5);
 	}
 
-	public void build(String entityFilePath) throws IOException {
+	public void build(Iterable<String> entities) throws IOException {
 		//generate mph values
-		File inputPath = new File(entityFilePath);
 		File mphPath = new File(mphDir, SpotMinimalPerfectHash.STDNAME);
 		File spotMphFile = new File(mphDir,
 				SpotMinimalPerfectHash.STDSPOTNAME);
@@ -35,8 +39,8 @@ public class MPHSpotter implements Spotter {
 		System.out.println("outputPath = " + spotMphFile);
 
 		SpotMinimalPerfectHash mph = new SpotMinimalPerfectHash()
-				.generateHash(inputPath);
-		mph.dumpSpotsAndHash(inputPath, spotMphFile);
+				.generateHash(entities);
+		mph.dumpSpotsAndHash(entities, spotMphFile);
 		mph.dump(mphPath);
 
 		//sort by mph values
@@ -57,7 +61,8 @@ public class MPHSpotter implements Spotter {
 		tmp.deleteOnExit();
 		// inputPath.deleteOnExit();
 		RamSpotFile spotFile = new RamSpotFile();
-		spotFile.dumpSpotFile(spotMphFile, outputPath, tmp);
+		InputStream newSpotStream = new FileInputStream(spotMphFile.getPath());
+		spotFile.dumpSpotFile(new SpotIterable(newSpotStream, "\t"), outputPath, tmp);
 		SpotEliasFanoOffsets offsets = new SpotEliasFanoOffsets()
 				.generateEliasFanoFile(tmp.getAbsolutePath());
 		offsets.dump(efPath);

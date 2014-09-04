@@ -1,13 +1,10 @@
 package de.mpii.spotter;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 
 import de.mpii.ternarytree.TernaryTriePrimitive;
 
@@ -28,17 +25,22 @@ public class TrieSpotter implements Spotter{
      *         document.
      * @throws IOException 
      */
-    public void build(String entityFilePath) throws IOException {
-    	InputStream entityStream = Files.newInputStream(Paths.get(entityFilePath));
-        BufferedReader reader = new BufferedReader(new InputStreamReader(
-                entityStream));
-        String line = null;
+    public void build(Iterable<String> iterable) {
+    	ArrayList<String> entities = new ArrayList<String>();
+    	Iterator<String> entitiesIter = iterable.iterator();
+    	while(entitiesIter.hasNext()) {
+    		entities.add(entitiesIter.next());
+    	}
+        Random r = new Random();
+        for(int i = entities.size() - 1; i > 0; i--) {
+            int randomIndex = r.nextInt(i);
+            String temp = entities.get(i);
+            entities.set(i, entities.get(randomIndex));
+            entities.set(randomIndex, temp);
+        }
         int id = 0;
-        while ((line = reader.readLine()) != null) {
-            int startPos = line.indexOf('"');
-            int endPos = line.indexOf('"', startPos + 1);
-            String key = line.substring(startPos + 1, endPos);
-            trie.put(key, ++id);
+        for (String entity : entities) {
+            trie.put(entity, id++);
         }
     }
 

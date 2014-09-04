@@ -17,7 +17,7 @@ public class BenchmarkTest {
     
     @Before
     public void initBenchmarkTest() throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-        this.benchmark = new Benchmark(getClass().getResource("/entities.txt").getPath(), 
+        this.benchmark = new Benchmark(getClass().getResourceAsStream("/entities.txt"), 
                 getClass().getResourceAsStream("/document.txt"));
     }
     
