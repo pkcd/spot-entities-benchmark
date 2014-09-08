@@ -70,8 +70,8 @@ public class MPHSpotter implements Spotter {
 			String spot = shingler.text();
 			int id = (int) repo.getId(spot);
 			if (id >= 0) {
-				System.out.println("match:" + spot + "(" + shingler.getStart()
-						+ "," + shingler.getEnd() + ")");
+//				System.out.println("match:" + spot + "(" + shingler.getStart()
+//						+ "," + shingler.getEnd() + ")");
 				matchedSpots.add(new Spot(shingler.getStart(), shingler
 						.getCurrentTokenLength(), id));
 

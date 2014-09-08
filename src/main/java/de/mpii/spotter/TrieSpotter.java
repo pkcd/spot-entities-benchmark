@@ -1,10 +1,13 @@
 package de.mpii.spotter;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 
 import de.mpii.ternarytree.TernaryTriePrimitive;
 
@@ -25,23 +28,28 @@ public class TrieSpotter implements Spotter{
      *         document.
      * @throws IOException 
      */
-    public void build(Iterable<String> iterable) {
-    	ArrayList<String> entities = new ArrayList<String>();
-    	Iterator<String> entitiesIter = iterable.iterator();
-    	while(entitiesIter.hasNext()) {
-    		entities.add(entitiesIter.next());
+    public void build(Iterable<String> iterable) throws IOException {
+        File entityFile = File.createTempFile("entities_copy", "txt");
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
+                new FileOutputStream(entityFile)));
+    	Iterator<String> iterator = iterable.iterator();
+    	int id = 0;
+    	while(iterator.hasNext()) {
+    		writer.write(iterator.next() + "\t" + id + "\n");
+    		id++;
     	}
-        Random r = new Random();
-        for(int i = entities.size() - 1; i > 0; i--) {
-            int randomIndex = r.nextInt(i);
-            String temp = entities.get(i);
-            entities.set(i, entities.get(randomIndex));
-            entities.set(randomIndex, temp);
-        }
-        int id = 0;
+    	writer.close();
+
+        File entitySorted = File.createTempFile("entities_sorted", "txt");
+    	ExternalSort.sort(entityFile.getPath(), entitySorted.getPath(), '\t', 1, false, true);
+    	
+    	Iterable<String> entities = new SpotIterable(entitySorted, "\t");
+        id = 0;
         for (String entity : entities) {
             trie.put(entity, id++);
         }
+        entitySorted.delete();
+        entityFile.delete();
     }
 
     /**
