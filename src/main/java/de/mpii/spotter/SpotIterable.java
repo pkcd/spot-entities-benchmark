@@ -1,24 +1,30 @@
 package de.mpii.spotter;
 
-import java.io.InputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.Iterator;
 
 public class SpotIterable implements Iterable<String>{
-	private InputStream spotStream;
+	private File spotFile;
 	private String delimiter;
 
-	 public SpotIterable(InputStream spotStream) {
-		this.spotStream = spotStream;
+	 public SpotIterable(File spotFile) {
+		this.spotFile = spotFile;
 		this.delimiter = "\"";
 	}
 	 
-	 public SpotIterable(InputStream spotStream, String delimiter) {
-		this.spotStream = spotStream;
+	 public SpotIterable(File spotFile, String delimiter) {
+		this.spotFile = spotFile;
 		this.delimiter = delimiter;
 	}
 
 	public Iterator<String> iterator() {
-		return new SpotIterator(spotStream, delimiter);
+		try {
+            return new SpotIterator(new FileInputStream(spotFile), delimiter);
+        } catch (FileNotFoundException e) {
+            return null;
+        }
 	}
 
 }

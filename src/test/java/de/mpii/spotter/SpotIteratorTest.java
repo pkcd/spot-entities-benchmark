@@ -2,6 +2,8 @@ package de.mpii.spotter;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -10,8 +12,9 @@ import org.junit.Test;
 public class SpotIteratorTest {
 
 	@Test
-	public void testBasic() {
-		SpotIterable iterable = new SpotIterable(getClass().getResourceAsStream("/entities.txt"));
+	public void testBasic() throws URISyntaxException {
+        SpotIterable iterable = new SpotIterable(new File(getClass()
+                .getResource("/entities.txt").toURI()));
 		Iterator<String> iterator = iterable.iterator();
 		ArrayList<String> readValues = new ArrayList<String>();
 		while(iterator.hasNext()) {

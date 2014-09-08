@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Iterator;
-import java.util.Scanner;
 
 public class SpotIterator implements Iterator<String> {
 	BufferedReader br = null;
@@ -32,8 +31,13 @@ public class SpotIterator implements Iterator<String> {
 	}
 
 	public String next() {
-		Scanner scanner = new Scanner(nextLine).useDelimiter(delimiter);
-		String next = scanner.next();
+		String next;
+		int indexOf = nextLine.indexOf(delimiter);
+		if (indexOf == 0) {
+		    next = nextLine.substring(1, nextLine.indexOf(delimiter, 1));
+		} else {
+		    next = nextLine.substring(0, indexOf);
+		}
 		try {
 			nextLine = br.readLine();
 		} catch (IOException e) {

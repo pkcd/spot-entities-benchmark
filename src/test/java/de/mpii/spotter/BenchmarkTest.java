@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.List;
 
 import org.junit.Before;
@@ -16,9 +17,10 @@ public class BenchmarkTest {
     private Benchmark benchmark;
     
     @Before
-    public void initBenchmarkTest() throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-        this.benchmark = new Benchmark(getClass().getResourceAsStream("/entities.txt"), 
-                getClass().getResourceAsStream("/document.txt"));
+    public void initBenchmarkTest() throws IOException, ClassNotFoundException,
+            InstantiationException, IllegalAccessException, URISyntaxException {
+        this.benchmark = new Benchmark(new File(getClass().getResource("/entities.txt").toURI()), 
+                new File(getClass().getResource("/document.txt").toURI()) );
     }
     
     @SuppressWarnings("unchecked")

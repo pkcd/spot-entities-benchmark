@@ -1,13 +1,8 @@
 package de.mpii.spotter;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import de.mpii.mph.RamSpotFile;
@@ -61,11 +56,11 @@ public class MPHSpotter implements Spotter {
 		tmp.deleteOnExit();
 		// inputPath.deleteOnExit();
 		RamSpotFile spotFile = new RamSpotFile();
-		InputStream newSpotStream = new FileInputStream(spotMphFile.getPath());
-		spotFile.dumpSpotFile(new SpotIterable(newSpotStream, "\t"), outputPath, tmp);
+		spotFile.dumpSpotFile(new SpotIterable(spotMphFile, "\t"), outputPath, tmp);
 		SpotEliasFanoOffsets offsets = new SpotEliasFanoOffsets()
 				.generateEliasFanoFile(tmp.getAbsolutePath());
 		offsets.dump(efPath);
+        repo = new RamSpotRepository(mphDir);
 	}
 
 	public List<Spot> findLongestMatches(String[] document) {
@@ -89,6 +84,7 @@ public class MPHSpotter implements Spotter {
 		return matchedSpots;
 	}
 
+    @SuppressWarnings("unused")
 	private class Shingler {
 
 		int start = 0;
@@ -132,7 +128,7 @@ public class MPHSpotter implements Spotter {
 			return sb.toString();
 		}
 
-		public int getMaxShingleSize() {
+        public int getMaxShingleSize() {
 			return maxShingleSize;
 		}
 

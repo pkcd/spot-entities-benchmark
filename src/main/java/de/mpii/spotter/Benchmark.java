@@ -2,12 +2,10 @@ package de.mpii.spotter;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,13 +17,13 @@ import org.apache.commons.cli.PosixParser;
 
 public class Benchmark {
 	private static final String DOCSTART = "--DOCSTART--";
-    private InputStream entityStream; //from a source like aida_means.tsv
-    private InputStream documentStream; //from a source like CoNLL.tsv
+    private File entityFile; //from a source like aida_means.tsv
+    private File documentFile; //from a source like CoNLL.tsv
     
-    public Benchmark(InputStream entityStream, InputStream documentStream)
+    public Benchmark(File eFile, File dFile)
             throws IOException {
-        this.entityStream = entityStream;
-        this.documentStream = documentStream;
+        this.entityFile = eFile;
+        this.documentFile = dFile;
     }
 
     /**
@@ -34,7 +32,7 @@ public class Benchmark {
      */
     public Result measureBuildTime(Spotter spotter) throws IOException {
         long startTime = System.nanoTime();
-        spotter.build(new SpotIterable(entityStream));
+        spotter.build(new SpotIterable(entityFile));
         long endTime = System.nanoTime();
         return new Result((endTime - startTime) / (1.0 * 1e9), null);
     }
@@ -46,7 +44,7 @@ public class Benchmark {
     	List<Result> results = new ArrayList<Result>();
         ArrayList<String> document = new ArrayList<String>();
         BufferedReader reader = new BufferedReader(new InputStreamReader(
-                documentStream));
+                new FileInputStream(documentFile)));
     	while (true) {
             String line = null;
             document.clear();
@@ -64,6 +62,7 @@ public class Benchmark {
             //System.out.println("Spotting Time " + spottingTime + " s");
             results.add(new Result(spottingTime, result));
     	}
+    	reader.close();
     	return results;
     }
     
@@ -114,13 +113,10 @@ public class Benchmark {
         CommandLineParser parser = new PosixParser();
         try {
             CommandLine cmd = parser.parse(options, args);
-            String entityFilePath = cmd.getOptionValue("e");
-            String documentFilePath = cmd.getOptionValue("d");
+        	File eFile = new File(cmd.getOptionValue("e"));
+            File dFile = new File(cmd.getOptionValue("d"));
             
-        	InputStream entityStream = Files.newInputStream(Paths.get(entityFilePath));
-            InputStream documentStream = Files.newInputStream(Paths.get(documentFilePath));
-            
-            Benchmark benchmark = new Benchmark(entityStream, documentStream);
+            Benchmark benchmark = new Benchmark(eFile, dFile);
         	File dir = createTempDirectory("mphDir");
         	dir.deleteOnExit();
             Spotter[] subjectSpotters = new Spotter[]{new TrieSpotter(), new MPHSpotter(dir)};
