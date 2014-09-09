@@ -49,7 +49,9 @@ public class Benchmark {
             String line = null;
             document.clear();
             while ((line = reader.readLine()) != null && !line.equals(DOCSTART)) {
-                	document.add(line.split("\t")[0]);
+                String tok = line.split("\t")[0];
+                if (tok.length() > 0)
+                    document.add(tok);
             }
             if (document.size() <= 0) {
             	break;
@@ -122,14 +124,26 @@ public class Benchmark {
             Spotter[] subjectSpotters = new Spotter[]{new TrieSpotter(), new MPHSpotter(dir)};
             for (Spotter spotter : subjectSpotters) {
                 System.out.println("Benchmarking " + spotter.getClass());
-                Result r = benchmark.measureBuildTime(spotter);
+
+                System.out.println("Building...");
+                long startMem = Runtime.getRuntime().totalMemory();
+                System.out.println("Total Memory before " + startMem + " bytes");  
+                    Result r = benchmark.measureBuildTime(spotter);
+                long endMem = Runtime.getRuntime().totalMemory();
+                System.out.println("Total Memory after " + endMem + " bytes. " + "Approx build usage " + (endMem - startMem)/(1024.0 * 1024.0) + " MB.");  
                 System.out.println("Build Time " + r.getTime() + " s");
-                List<Result> results = benchmark.measureSpottingTime(spotter);
+
+                
+                System.out.println("Spotting...");
+                startMem = Runtime.getRuntime().totalMemory();
+                System.out.println("Total Memory before " + startMem + " bytes");  
+                    List<Result> results = benchmark.measureSpottingTime(spotter);
                 double averageTime = 0;
                 for (Result singleResult : results) {
                 	averageTime += singleResult.getTime();
                 }
                 averageTime /= results.size();
+                System.out.println("Total Memory after " + endMem + " bytes. " + "Approx spot usage " + (endMem - startMem)/(1024.0 * 1024.0) + " MB.");  
 				System.out.println("Average Spotting Time for "
 						+ results.size() + " documents: " + averageTime + " s");
             }
