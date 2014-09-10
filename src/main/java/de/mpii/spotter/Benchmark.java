@@ -47,24 +47,24 @@ public class Benchmark {
         BufferedReader reader = new BufferedReader(new InputStreamReader(
                 new FileInputStream(documentFile)));
         reader.readLine();
-    	while (true) {
-            String line = null;
-            document.clear();
-            while ((line = reader.readLine()) != null && !line.contains(DOCSTART)) {
+    	while ( true ) {
+    	    String line = reader.readLine();
+    	    if (line == null || line.contains(DOCSTART)) {
+                long startTime = System.nanoTime();
+                List<Spot> result = spotter.findLongestMatches(document.toArray(new String[]{}));
+                long endTime = System.nanoTime();
+                double spottingTime = (endTime - startTime)/(1.0*1e9);
+                //System.out.println("Spotting Time " + spottingTime + " s");
+                results.add(new Result(spottingTime, result));
+                document.clear();
+                if (line == null) {
+                    break;
+                }
+    	    } else {
                 String tok = line.split("\t")[0];
                 if (tok.length() > 0)
                     document.add(tok);
-            }
-            if (document.size() <= 0) {
-            	break;
-            }
-
-            long startTime = System.nanoTime();
-            List<Spot> result = spotter.findLongestMatches(document.toArray(new String[]{}));
-            long endTime = System.nanoTime();
-            double spottingTime = (endTime - startTime)/(1.0*1e9);
-            //System.out.println("Spotting Time " + spottingTime + " s");
-            results.add(new Result(spottingTime, result));
+    	    }
     	}
     	reader.close();
     	return results;
