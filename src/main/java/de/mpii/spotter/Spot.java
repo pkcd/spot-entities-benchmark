@@ -1,6 +1,6 @@
 package de.mpii.spotter;
 
-public class Spot {
+class Spot {
 
 	private int tokenOffset;
 	private int tokenCount;

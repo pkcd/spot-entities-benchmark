@@ -1,3 +1,4 @@
+-DOCSTART- (1 EU)
 Berlin	http://en.com
 is
 a
@@ -8,6 +9,7 @@ so
 is
 Saarbruken	http://en.com
 .
+
 Both
 are
 cities
@@ -15,7 +17,8 @@ in
 German	http://en.com
 Union	
 .
---DOCSTART--
+
+-DOCSTART- (1 EU)
 Saarland	http://en.com
 University	http://en.com
 in

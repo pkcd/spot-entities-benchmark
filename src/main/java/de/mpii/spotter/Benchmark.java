@@ -16,13 +16,14 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 
 public class Benchmark {
-	private static final String DOCSTART = "--DOCSTART--";
+	private static final String DOCSTART = "-DOCSTART-";
     private File entityFile; //from a source like aida_means.tsv
     private File documentFile; //from a source like CoNLL.tsv
     
     public Benchmark(File eFile, File dFile)
             throws IOException {
-        this.entityFile = eFile;
+        this.entityFile = File.createTempFile(eFile.getPath(), "unique");
+        ExternalSort.sort(eFile.getPath(), this.entityFile.getPath(), '\t', 1, true, false, false);
         this.documentFile = dFile;
     }
 
@@ -45,10 +46,11 @@ public class Benchmark {
         ArrayList<String> document = new ArrayList<String>();
         BufferedReader reader = new BufferedReader(new InputStreamReader(
                 new FileInputStream(documentFile)));
+        reader.readLine();
     	while (true) {
             String line = null;
             document.clear();
-            while ((line = reader.readLine()) != null && !line.equals(DOCSTART)) {
+            while ((line = reader.readLine()) != null && !line.contains(DOCSTART)) {
                 String tok = line.split("\t")[0];
                 if (tok.length() > 0)
                     document.add(tok);
@@ -115,7 +117,7 @@ public class Benchmark {
         CommandLineParser parser = new PosixParser();
         try {
             CommandLine cmd = parser.parse(options, args);
-        	File eFile = new File(cmd.getOptionValue("e"));
+            File eFile = new File(cmd.getOptionValue("e"));
             File dFile = new File(cmd.getOptionValue("d"));
             
             Benchmark benchmark = new Benchmark(eFile, dFile);

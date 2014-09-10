@@ -40,7 +40,7 @@ public class MPHSpotter implements Spotter {
 
 		//sort by mph values
 		File sortedSpotMphFile = new File(mphDir, "sorted_spot_mph.tsv");
-		ExternalSort.sort(spotMphFile.getPath(), sortedSpotMphFile.getPath(), '\t', 2, true, false);
+		ExternalSort.sort(spotMphFile.getPath(), sortedSpotMphFile.getPath(), '\t', 2, false, true, false);
 		sortedSpotMphFile.renameTo(spotMphFile);
 		
 		//generate mph index

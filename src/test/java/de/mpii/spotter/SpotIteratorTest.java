@@ -24,6 +24,7 @@ public class SpotIteratorTest {
 		assertEquals("German Union", readValues.get(1));
 		assertEquals("Berlin", readValues.get(2));
 		assertEquals("Saarland University", readValues.get(3));
-		assertEquals("CHE", readValues.get(4));
+        assertEquals("Saarland University", readValues.get(4));
+		assertEquals("CHE", readValues.get(5));
 	}
 }

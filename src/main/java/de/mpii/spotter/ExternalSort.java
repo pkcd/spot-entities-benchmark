@@ -7,18 +7,21 @@ import java.util.ArrayList;
 
 public class ExternalSort {
 
-	public static int sort(String inputPath, String outputPath, char delimiter,
-			int keyField, boolean isNumeric, boolean doShuffle) throws IOException {
+	public static int sort(String inputPath, String outputPath, char delimiter, int keyField,
+	        boolean unique, boolean isNumeric, boolean doShuffle) throws IOException {
 		ArrayList<String> command = new ArrayList<String>();
 		command.add("sort");
 		command.add("-t");
 		command.add(String.valueOf(delimiter));
-		command.add("-k" + String.valueOf(keyField));
+		command.add("-k" + String.valueOf(keyField) + "," + String.valueOf(keyField));
 		if (isNumeric) {
 			command.add("-n");
 		}
 		if (doShuffle) {
 			command.add("-R");
+		}
+		if (unique) {
+		    command.add("-u");
 		}
 		command.add(inputPath);
 		command.add("-o");
@@ -46,10 +49,10 @@ public class ExternalSort {
 	}
 	
 	public static void main(String args[]) throws IOException {
-		int returnValue = ExternalSort.sort("/tmp/test.txt", "/tmp/sort_test.txt", '\t', 2, true, false);
+		int returnValue = ExternalSort.sort("/tmp/test.txt", "/tmp/sort_test.txt", '\t', 2, false, true, false);
 		System.out.println("Return Value = " + returnValue);
 
-		returnValue = ExternalSort.sort("/tmp/test.txt", "/tmp/random_test.txt", '\t', 1, false, false);
+		returnValue = ExternalSort.sort("/tmp/test.txt", "/tmp/random_test.txt", '\t', 1, false, false, false);
 		System.out.println("Return Value = " + returnValue);
 	}
 }

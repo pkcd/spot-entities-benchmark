@@ -41,7 +41,7 @@ public class TrieSpotter implements Spotter{
     	writer.close();
 
         File entitySorted = File.createTempFile("entities_sorted", "txt");
-    	ExternalSort.sort(entityFile.getPath(), entitySorted.getPath(), '\t', 1, false, true);
+    	ExternalSort.sort(entityFile.getPath(), entitySorted.getPath(), '\t', 1, false, false, true);
     	
     	Iterable<String> entities = new SpotIterable(entitySorted, "\t");
         id = 0;
@@ -61,8 +61,8 @@ public class TrieSpotter implements Spotter{
      */
     public List<Spot> findLongestMatches(String[] tokens) {
     	List<Spot> returnedResults = new ArrayList<Spot>();
-    	List<de.mpii.ternarytree.Spot> matches = trie.getAllMatches(tokens);
-    	for (de.mpii.ternarytree.Spot match : matches) {
+    	List<de.mpii.ternarytree.Match> matches = trie.getAllMatches(tokens);
+    	for (de.mpii.ternarytree.Match match : matches) {
     		Spot s = new Spot(match.getTokenOffset(), match.getTokenCount(), match.getValue());
     		returnedResults.add(s);
     	}
