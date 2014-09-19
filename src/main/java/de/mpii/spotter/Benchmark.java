@@ -123,7 +123,7 @@ public class Benchmark {
             Benchmark benchmark = new Benchmark(eFile, dFile);
         	File dir = createTempDirectory("mphDir");
         	dir.deleteOnExit();
-            Spotter[] subjectSpotters = new Spotter[]{new TrieSpotter(), new MPHSpotter(dir)};
+            Spotter[] subjectSpotters = new Spotter[]{new TrieSpotter(), new MPHSpotter(dir), new SimpleSpotter()};
             for (Spotter spotter : subjectSpotters) {
                 System.out.println("Benchmarking " + spotter.getClass());
 

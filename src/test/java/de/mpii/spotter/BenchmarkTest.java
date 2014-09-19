@@ -28,7 +28,7 @@ public class BenchmarkTest {
     public void testBenchmark() throws IOException {
     	File mphDir = createTempDirectory("mphDir");
     	mphDir.deleteOnExit();
-        Spotter[] subjectSpotters = new Spotter[]{new TrieSpotter(), new MPHSpotter(mphDir)};
+        Spotter[] subjectSpotters = new Spotter[]{new TrieSpotter(), new MPHSpotter(mphDir), new SimpleSpotter()};
         for (Spotter spotter : subjectSpotters) {
             Result r = benchmark.measureBuildTime(spotter);
             assertEquals(true, r.getTime() > 0);
