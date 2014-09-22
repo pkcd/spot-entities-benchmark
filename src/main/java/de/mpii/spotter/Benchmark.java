@@ -177,7 +177,7 @@ public class Benchmark {
                 System.out.println("Avg. spotting time/document: " + totalTime
                         / results.size() + " s");
                 System.out.println("Avg. time/spot: " + totalTime / totalSpots
-                        + " s");
+                        + " s\n");
             }
         } catch (ParseException e) {
             throw new RuntimeException(e);

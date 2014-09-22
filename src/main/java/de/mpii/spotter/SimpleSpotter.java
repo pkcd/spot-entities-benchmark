@@ -23,6 +23,7 @@ public class SimpleSpotter implements Spotter{
             if (l > max) max = l;
             mentions.put(s, ++id);
         }
+        System.out.println("Max. number of tokens in an entity:" + max);
     }
 
     @Override
