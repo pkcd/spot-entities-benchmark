@@ -132,6 +132,7 @@ public class Benchmark {
             for (Spotter spotter : subjectSpotters) {
                 System.out.println("Benchmarking " + spotter.getClass());
 
+                System.gc();
                 System.out.println("Building...");
                 long startMem = Runtime.getRuntime().totalMemory()
                         - Runtime.getRuntime().freeMemory();
@@ -145,6 +146,8 @@ public class Benchmark {
                         / (1024.0 * 1024.0) + " MB.");
                 System.out.println("Build Time " + r.getTime() + " s");
 
+                
+                System.gc();
                 System.out.println("Spotting...");
                 startMem = Runtime.getRuntime().totalMemory()
                         - Runtime.getRuntime().freeMemory();
@@ -155,6 +158,7 @@ public class Benchmark {
                         - Runtime.getRuntime().freeMemory();
                 double totalTime = 0;
                 long minSpots = Long.MAX_VALUE, maxSpots = Long.MIN_VALUE, totalSpots = 0;
+                long checksum = 0, iResult = 0;
                 for (Result singleResult : results) {
                     totalTime += singleResult.getTime();
                     @SuppressWarnings("unchecked")
@@ -166,6 +170,8 @@ public class Benchmark {
                         minSpots = spotList.size();
                     }
                     totalSpots += spotList.size();
+                    iResult++;
+                    checksum += iResult * spotList.size();
                 }
                 System.out.println("Total Memory after " + endMem + " bytes. "
                         + "Approx spot usage " + (endMem - startMem)
@@ -173,7 +179,7 @@ public class Benchmark {
                 System.out.println("Total documents: " + results.size());
                 System.out.println("Avg. spots/document: " + (1.0 * totalSpots)
                         / results.size() + ", Min: " + minSpots + ", Max: "
-                        + maxSpots);
+                        + maxSpots + ", Checksum: " + checksum);
                 System.out.println("Avg. spotting time/document: " + totalTime
                         / results.size() + " s");
                 System.out.println("Avg. time/spot: " + totalTime / totalSpots
