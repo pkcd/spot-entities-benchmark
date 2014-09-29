@@ -129,7 +129,8 @@ public class Benchmark {
             dir.deleteOnExit();
             Spotter[] subjectSpotters = new Spotter[] { new TrieSpotter(),
                     new MPHSpotter(dir), new SimpleSpotter() };
-            for (Spotter spotter : subjectSpotters) {
+            for (int i = 0; i < subjectSpotters.length; i++) {
+                Spotter spotter = subjectSpotters[i];
                 System.out.println("Benchmarking " + spotter.getClass());
 
                 System.gc();
@@ -184,6 +185,7 @@ public class Benchmark {
                         / results.size() + " s");
                 System.out.println("Avg. time/spot: " + totalTime / totalSpots
                         + " s\n");
+                subjectSpotters[i] = null;
             }
         } catch (ParseException e) {
             throw new RuntimeException(e);
