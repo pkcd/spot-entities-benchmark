@@ -62,4 +62,9 @@ public class SimpleSpotter implements Spotter{
         return s.toString();
     }
 
+    @Override
+    public void logStats() {
+        
+    }
+
 }

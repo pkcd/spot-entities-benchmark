@@ -25,4 +25,8 @@ public interface Spotter {
      */
     public List<Spot> findLongestMatches(String[] document);
     
+    /**
+     * Prints statistics about the structure. Useful for optimization hints.
+     */
+    public void logStats();
 }

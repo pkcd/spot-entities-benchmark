@@ -60,13 +60,28 @@ public class TrieSpotter implements Spotter{
      *         offset and count of the match.
      */
     public List<Spot> findLongestMatches(String[] tokens) {
-    	List<Spot> returnedResults = new ArrayList<Spot>();
-    	List<de.mpii.ternarytree.Match> matches = trie.getAllMatches(tokens);
-    	for (de.mpii.ternarytree.Match match : matches) {
-    		Spot s = new Spot(match.getTokenOffset(), match.getTokenCount(), match.getValue());
-    		returnedResults.add(s);
-    	}
-    	return returnedResults;
-   }
+        List<Spot> returnedResults = new ArrayList<Spot>();
+        List<de.mpii.ternarytree.Match> matches = trie.getAllMatches(tokens);
+        for (de.mpii.ternarytree.Match match : matches) {
+            Spot s = new Spot(match.getTokenOffset(), match.getTokenCount(),
+                    match.getValue());
+            returnedResults.add(s);
+        }
+        return returnedResults;
+    }  
 
+    public void logStats() {
+        System.out.println("Total nodes after building: " + trie.getTotalNodes());
+        int[] nodesPerLevel = trie.getNodesPerLevel();
+        int total = 0;
+        for (int i = 0; i < nodesPerLevel.length; i++) {
+            if (i == 0) {
+                System.out.print("Nodes per level: " + i + "\t" + nodesPerLevel[i]);
+            } else {
+                System.out.print(", " + i + "\t" + nodesPerLevel[i]);
+            }
+            total += nodesPerLevel[i];
+        }
+        System.out.println("\nTotal of all levels: " + total);
+    }
 }

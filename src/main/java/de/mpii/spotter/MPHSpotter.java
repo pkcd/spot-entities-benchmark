@@ -83,6 +83,10 @@ public class MPHSpotter implements Spotter {
 		}
 		return matchedSpots;
 	}
+	
+    @Override
+    public void logStats() {
+    }
 
     @SuppressWarnings("unused")
 	private class Shingler {

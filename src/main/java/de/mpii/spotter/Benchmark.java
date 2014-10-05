@@ -135,28 +135,26 @@ public class Benchmark {
 
                 System.gc();
                 System.out.println("Building...");
-                long startMem = Runtime.getRuntime().totalMemory()
-                        - Runtime.getRuntime().freeMemory();
-                System.out
-                        .println("Total Memory before " + startMem + " bytes");
+                long startMem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+                System.out.println("Total Memory before " + startMem + " bytes");
                 Result r = benchmark.measureBuildTime(spotter);
-                long endMem = Runtime.getRuntime().totalMemory()
-                        - Runtime.getRuntime().freeMemory();
-                System.out.println("Total Memory after " + endMem + " bytes. "
-                        + "Approx build usage " + (endMem - startMem)
-                        / (1024.0 * 1024.0) + " MB.");
+                long endMem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+                System.gc();
+                System.out.println("Total Memory after " + endMem + " bytes");
+                System.out.println("Approx. usage during build phase " + (endMem - startMem) / (1024.0 * 1024.0) + " MB");
+                endMem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+                System.out.println("Approx. data strucure size " + (endMem - startMem) / (1024.0 * 1024.0) + " MB");
                 System.out.println("Build Time " + r.getTime() + " s");
+                spotter.logStats();
 
                 
                 System.gc();
                 System.out.println("Spotting...");
-                startMem = Runtime.getRuntime().totalMemory()
-                        - Runtime.getRuntime().freeMemory();
-                System.out
-                        .println("Total Memory before " + startMem + " bytes");
+                startMem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+                System.out.println("Total Memory before " + startMem + " bytes");
                 List<Result> results = benchmark.measureSpottingTime(spotter);
-                endMem = Runtime.getRuntime().totalMemory()
-                        - Runtime.getRuntime().freeMemory();
+                endMem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+                System.gc();
                 double totalTime = 0;
                 long minSpots = Long.MAX_VALUE, maxSpots = Long.MIN_VALUE, totalSpots = 0;
                 long checksum = 0, iResult = 0;
@@ -174,17 +172,12 @@ public class Benchmark {
                     iResult++;
                     checksum += iResult * spotList.size();
                 }
-                System.out.println("Total Memory after " + endMem + " bytes. "
-                        + "Approx spot usage " + (endMem - startMem)
-                        / (1024.0 * 1024.0) + " MB.");
+                System.out.println("Total Memory after " + endMem + " bytes");
+                System.out.println("Approx. usage during spot phase " + (endMem - startMem) / (1024.0 * 1024.0) + " MB");
                 System.out.println("Total documents: " + results.size());
-                System.out.println("Avg. spots/document: " + (1.0 * totalSpots)
-                        / results.size() + ", Min: " + minSpots + ", Max: "
-                        + maxSpots + ", Checksum: " + checksum);
-                System.out.println("Avg. spotting time/document: " + totalTime
-                        / results.size() + " s");
-                System.out.println("Avg. time/spot: " + totalTime / totalSpots
-                        + " s\n");
+                System.out.println("Avg. spots/document: " + (1.0 * totalSpots) / results.size() + ", Min: " + minSpots + ", Max: " + maxSpots + ", Checksum: " + checksum);
+                System.out.println("Avg. spotting time/document: " + totalTime / results.size() + " s");
+                System.out.println("Avg. time/spot: " + totalTime / totalSpots + " s\n");
                 subjectSpotters[i] = null;
             }
         } catch (ParseException e) {
