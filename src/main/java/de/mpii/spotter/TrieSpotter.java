@@ -1,5 +1,8 @@
 package de.mpii.spotter;
 
+import gnu.trove.iterator.TIntIntIterator;
+import gnu.trove.map.TIntIntMap;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -76,12 +79,30 @@ public class TrieSpotter implements Spotter{
         int total = 0;
         for (int i = 0; i < nodesPerLevel.length; i++) {
             if (i == 0) {
-                System.out.print("Nodes per level: " + i + "\t" + nodesPerLevel[i]);
+                System.out.print("Nodes per level: " + i + "-" + nodesPerLevel[i]);
             } else {
-                System.out.print(", " + i + "\t" + nodesPerLevel[i]);
+                System.out.print(", " + i + "-" + nodesPerLevel[i]);
             }
             total += nodesPerLevel[i];
         }
         System.out.println("\nTotal of all levels: " + total);
+        
+        TIntIntMap distribution = trie.getCollapsableLengths();
+        boolean first = true;
+        long totalCollapsableCharacters = 0;
+        long totalCollapsableStrings = 0;
+        for (TIntIntIterator it = distribution.iterator(); it.hasNext();) {
+            it.advance();
+            if (first) {
+                System.out.print("Distribution of collapsable strings: " + it.key() + "-" + it.value());
+            } else {
+                System.out.print(", " + it.key() + "-" + it.value());
+            }
+            totalCollapsableCharacters += it.key() * it.value();
+            totalCollapsableStrings += it.value();
+        }
+        System.out.println("\nTotal collapsable characters: " + totalCollapsableCharacters);
+        System.out.println("Total collapsable strings: " + totalCollapsableStrings);
+        System.out.println("Average collapsable length: " + (totalCollapsableCharacters * 1.0) / totalCollapsableStrings);
     }
 }
